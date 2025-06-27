@@ -1,0 +1,87 @@
+:root {
+  /* Colour Palette */
+  --white: #ffffff;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --yellow: #f59e0b;
+  --purple: #8b5cf6;
+  --red: #ef4444;
+  --teal: #06b6d4;
+  --lime: #84cc16;
+  --orange: #f97316;
+  --rose: #dc2626;
+  --pink: #ec4899;
+  --violet: #a855f7;
+
+  /* Glass Effect ColoUrs */
+  --glass-primary: rgba(255, 255, 255, 0.2);
+  --glass-secondary: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-border-subtle: rgba(255, 255, 255, 0.05);
+  --glass-hover: rgba(255, 255, 255, 0.25);
+
+  /* Accessibility & Focus */
+  --focus-ring-color: #4f46e5;
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+  --focus-ring-style: solid;
+  
+  /* High contrast alternatives */
+  --high-contrast-bg: #000000;
+  --high-contrast-text: #ffffff;
+  --high-contrast-border: #ffffff;
+  --high-contrast-button-bg: #ffffff;
+  --high-contrast-button-text: #000000;
+  --high-contrast-revealed-bg: #333333;
+  --high-contrast-focus: #ffff00;
+
+  /* Layout */
+  --container-max-width: 900px;
+  --body-padding: 20px;
+  --body-padding-mobile: 12px;
+  --title-margin-top-mobile: 60px;
+  --min-width: 250px;
+
+  /* Spacing System */
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Backdrop Filter */
+  --blur-sm: blur(10px);
+  --blur-md: blur(14px);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px;
+  --shadow-md: 0 4px 15px;
+  --shadow-lg: 0 6px 20px;
+  --shadow-xl: 0 8px 25px;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 15px;
+  --radius-lg: 20px;
+  --radius-full: 50px;
+
+  /* Cell Dimensions */
+  --cell-size-desktop-large: 45px;
+  --cell-size-desktop: 40px;
+  --cell-size-tablet: 35px;
+  --cell-size-mobile: 30px;
+
+  /* Typography */
+  --font-family-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-size-xs: 0.8rem;
+  --font-size-sm: 0.9rem;
+  --font-size-lg: 2.5rem;
+  --font-size-xl: 3.5rem;
+  --font-size-mobile-title: 1.7rem;
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --glass-secondary: var(--high-contrast-bg);
+    --focus-ring-color: var(--high-contrast-focus);
+  }
+}

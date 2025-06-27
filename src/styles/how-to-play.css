@@ -1,0 +1,108 @@
+.htp {
+  margin-bottom: var(--space-md);
+  color: var(--white);
+}
+
+.htp h2 {
+  font-size: var(--font-size-lg);
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
+.htp-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.htp-item {
+  /* Force equal width */
+  flex-grow: 1;
+  flex-basis: 0;
+  padding: 12px 24px;
+  background: var(--glass-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+}
+
+.htp-item h3 {
+  margin-bottom: var(--space-sm);
+}
+
+.htp-badge-list {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.htp-badge {
+  padding: 4px 12px;
+  background: var(--glass-primary);
+  border: 1px solid var(--glass-border);
+  font-weight: 600;
+  min-width: 60px;
+  text-align: center;
+  font-size: var(--font-size-xs);
+  border-radius: var(--radius-lg);
+  display: inline-flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+@media (prefers-contrast: high), (prefers-contrast: more) {
+  .htp-item, .htp-badge {
+    border: 2px solid var(--high-contrast-border)
+  }
+  .htp-badge {
+    background: var(--high-contrast-bg);
+    color: var(--high-contrast-text);
+  }
+}
+
+@media (min-width: 480px) and (max-width: 992px) {
+  .htp-list {
+    background: var(--glass-secondary);
+    border: 1px solid var(--glass-border);
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    padding: 12px 24px;
+    gap: var(--space-xl);
+  }
+  .htp-badge-list {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .htp-item {
+    padding: 0;
+    background: unset;
+    border: 0;
+    flex-grow: unset;
+  }
+  .htp-badge {
+    width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .htp-list {
+    gap: var(--space-md);
+    padding: 0 var(--space-sm);
+  }
+  .htp-item {
+    padding: unset;
+    background: none;
+    border: none;
+  }
+  .htp-badge-list {
+    flex-direction: column;
+  }
+  .htp-badge:not(.htp-badge-mobile) {
+    display: none;
+  }
+}
+
+@media (max-width: 320px) {
+  .htp-list {
+    flex-direction: column;
+  }
+}

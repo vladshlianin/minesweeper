@@ -1,0 +1,99 @@
+@import "./vars.css";
+@import "./github.css";
+@import "./diff-selectors.css";
+@import "./controls.css";
+@import "./how-to-play.css";
+@import "./board.css";
+@import "./confetti.css";
+
+/* Remove built in margins */
+* {
+    margin: 0;
+    box-sizing: border-box;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  font-family: var(--font-family-primary);
+  background:
+      linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%),
+      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: var(--body-padding);
+  min-width: var(--min-width);
+  position: relative;
+}
+
+.game {
+  background: var(--glass-primary);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  user-select: none;
+  box-shadow: 
+    0 8px 32px var(--glass-primary),
+    inset 0 1px 0 var(--glass-border);
+}
+
+.title {
+  text-align: center;
+  font-size: var(--font-size-xl);
+  font-weight: 900;
+  color: var(--white);
+  margin-bottom: var(--space-xl);
+}
+
+/* Screen only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@media (prefers-contrast: high), (prefers-contrast: more) {
+  body {
+    background: var(--high-contrast-bg);
+    color: var(--high-contrast-text);
+  }
+  .game {
+    border: 2px solid var(--high-contrast-border);
+    background: var(--high-contrast-bg);
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: var(--font-size-lg);
+  }
+  
+  .game {
+    padding: var(--space-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: var(--body-padding-mobile);
+  }
+
+  .title {
+    margin-top: var(--title-margin-top-mobile);
+    font-size: var(--font-size-mobile-title);
+  }
+}

@@ -1,0 +1,56 @@
+.github-corner {
+  position: absolute;
+  right: 0;
+  top: 0;
+  border-bottom-left-radius: var(--radius-lg);
+  border-left: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
+  width: 90px;
+  height: 90px;
+  box-sizing: border-box;
+  background: var(--glass-primary);
+  backdrop-filter: var(--blur-md);
+  padding: 14px;
+  transition: all 300ms ease;
+  position: fixed;
+}
+
+.github-corner:hover, .github-corner:focus {
+  /* Fill card, make bg the same color as border */
+  background: var(--glass-border);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-xl) rgba(0, 0, 0, 0.2);
+}
+
+.github-corner:focus {
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.github-corner svg {
+    color: white;
+}
+
+@media (prefers-contrast: high), (prefers-contrast: more) {
+  .github-corner {
+    background: var(--high-contrast-bg);
+    border-left: 2px solid var(--high-contrast-border);
+    border-bottom: 2px solid var(--high-contrast-border);
+  }
+  .github-corner:hover, .github-corner:focus {
+    background: var(--high-contrast-bg);
+  }
+}
+
+
+@media (max-width: 768px) {
+  .github-corner {
+    width: 60px;
+    height: 60px;
+  }
+
+  .github-corner svg {
+    width: 28px;
+    height: 28px;
+  }
+}
