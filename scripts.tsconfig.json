@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "outDir": "./scripts/dist",
+    "allowSyntheticDefaultImports": true,
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "node"
+  },
+  "include": [
+    "./scripts"
+  ]
+}

@@ -1,5 +1,7 @@
 # 🧨 Minesweeper
 
+![Coverage](badges/coverage.svg)
+
 A modern take on the classic Minesweeper game - accessible and responsive
 
 ## [DEMO](https://vladshlianin.github.io/minesweeper/)

@@ -11,7 +11,7 @@ const config = defineConfig({
     environment: 'jsdom',
     coverage: {
       reportsDirectory: '../coverage',
-      reporter: ['text', 'html', 'lcov'],
+      reporter: ['text-summary', 'lcov', 'json-summary'],
     },
   },
 });

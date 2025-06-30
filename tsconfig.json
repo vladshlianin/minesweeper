@@ -2,14 +2,17 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "allowImportingTsExtensions": false,
     "moduleDetection": "force",
     "noEmit": true,
-
     /* Linting */
     "strict": true,
     "useDefineForClassFields": true,
@@ -19,5 +22,11 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
   },
-  "include": ["src/js", "src/icons", "src/types", "src/js/minesweeper/tests/board.test.ts", "src/js/minesweeper/tests/dom.test.ts"]
+  "include": [
+    "src/js",
+    "src/icons",
+    "src/types",
+    "src/js/minesweeper/tests/board.test.ts",
+    "src/js/minesweeper/tests/dom.test.ts"
+  ]
 }
