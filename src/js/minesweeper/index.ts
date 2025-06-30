@@ -5,10 +5,15 @@ import { Announcer } from './announcer';
 
 import type { CellValue, Difficulty } from './types';
 
-const SMILEY_FACES = {
-  regular: 'smiley.png',
-  victory: 'smiley-victory.png',
-  lost: 'smiley-lost.png',
+const getStaticPath = (staticFile: string) => `/minesweeper/${staticFile}`;
+
+const STATIC_PATH = {
+  smileyRegular: getStaticPath('smiley.png'),
+  smileyVictory: getStaticPath('smiley-victory.png'),
+  smileyLost: getStaticPath('smiley-lost.png'),
+  flag: getStaticPath('flag.png'),
+  collision: getStaticPath('collision.png'),
+  bomb: getStaticPath('bomb.png'),
 } as const;
 
 // Map of difficulty, where first key is the size of grid in NxN pixels
@@ -130,7 +135,7 @@ export class MineSweeper {
     this.board = initBoard(this.size);
     this.flagPositions = create2dArray(false, this.size);
     this.gameEnded = false;
-    this.smileyImgEl.setAttribute('src', SMILEY_FACES.regular);
+    this.smileyImgEl.setAttribute('src', STATIC_PATH.smileyRegular);
     this.remainingFlags = this.minesCount;
     this.renderFlagCount(this.minesCount);
     this.gameStarted = false;
@@ -438,7 +443,7 @@ export class MineSweeper {
         }
         if (!hadFlag) {
           const imageEl = document.createElement('img');
-          imageEl.setAttribute('src', '/flag.png');
+          imageEl.setAttribute('src', STATIC_PATH.flag);
           imageEl.setAttribute('width', '20px');
           imageEl.setAttribute('height', '20px');
           target.appendChild(imageEl);
@@ -459,7 +464,7 @@ export class MineSweeper {
    */
   private renderMineCell(value: CellValue, target: Element) {
     const imageEl = document.createElement('img');
-    imageEl.setAttribute('src', value === 'RM' ? '/collision.png' : '/bomb.png');
+    imageEl.setAttribute('src', value === 'RM' ? STATIC_PATH.collision : STATIC_PATH.bomb);
     imageEl.setAttribute('width', '20px');
     imageEl.setAttribute('height', '20px');
     imageEl.setAttribute('aria-hidden', 'true');
@@ -525,7 +530,7 @@ export class MineSweeper {
    */
   private endGame(victory: boolean) {
     this.gameEnded = true;
-    this.smileyImgEl.setAttribute('src', victory ? SMILEY_FACES.victory : SMILEY_FACES.lost);
+    this.smileyImgEl.setAttribute('src', victory ? STATIC_PATH.smileyVictory : STATIC_PATH.smileyLost);
     this.clearTabIndexFromCells();
     if (
       victory &&

@@ -5,12 +5,12 @@ const config = defineConfig({
   server: {
     hmr: true,
   },
+  base: '/minesweeper',
   test: {
     root: './src',
     environment: 'jsdom',
     coverage: {
       reportsDirectory: '../coverage',
-      // enabled: true,
       reporter: ['text', 'html', 'lcov'],
     },
   },
