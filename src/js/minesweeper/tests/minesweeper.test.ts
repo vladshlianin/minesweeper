@@ -511,10 +511,10 @@ describe('MineSweeper', () => {
       mineSweeper.initGame();
 
       mineSweeper['endGame'](true);
-      expect(document.getElementById('smiley-img')?.getAttribute('src')).toBe('smiley-victory.png');
+      expect(document.getElementById('smiley-img')?.getAttribute('src')).toBe('/minesweeper/smiley-victory.png');
 
       mineSweeper['endGame'](false);
-      expect(document.getElementById('smiley-img')?.getAttribute('src')).toBe('smiley-lost.png');
+      expect(document.getElementById('smiley-img')?.getAttribute('src')).toBe('/minesweeper/smiley-lost.png');
     });
 
     it('announces game victory and defeat', () => {
@@ -550,7 +550,7 @@ describe('MineSweeper', () => {
 
       expect(document.getElementById('timer')?.innerText).toBe('00');
       expect(document.getElementById('flag-count')?.innerText).toBe('4');
-      expect(document.getElementById('smiley-img')?.getAttribute('src')).toBe('smiley.png');
+      expect(document.getElementById('smiley-img')?.getAttribute('src')).toBe('/minesweeper/smiley.png');
       expect(mineSweeper['announcer'].announceGameReset).toHaveBeenCalled();
     });
   });
@@ -657,7 +657,7 @@ describe('MineSweeper', () => {
 
       cell?.click();
 
-      expect(document.getElementById('smiley-img')?.getAttribute('src')).toBe('smiley-lost.png');
+      expect(document.getElementById('smiley-img')?.getAttribute('src')).toBe('/minesweeper/smiley-lost.png');
     });
 
     it('announces game lost when mine is clicked', () => {
