@@ -40,8 +40,10 @@ describe('MineSweeper', () => {
     });
   };
 
-  const getCell = (index = 0) => {
-    const cell = document.getElementById('game-board')?.children[index];
+  const getCell = (row: number, col: number) => {
+    const children = document.getElementById('game-board')?.children;
+    if (!children) throw new Error('Board has no children');
+    const cell = children[row].children[col];
     if (!(cell instanceof HTMLElement)) throw new Error('Error on getting cell');
     return cell;
   };
@@ -101,8 +103,10 @@ describe('MineSweeper', () => {
     it('initializes game with correct default state', () => {
       mineSweeper.initGame();
 
+      const gameBoard = document.getElementById('game-board');
       expect(document.getElementById('flag-count')?.innerText).toBe('4');
-      expect(document.getElementById('game-board')?.childElementCount).toBe(36); // 6x6 beginner
+      expect(gameBoard?.childElementCount).toBe(6); // 6x6 beginner
+      expect(gameBoard?.children[0].childElementCount).toBe(6); // 6x6 beginner
     });
 
     it('sets up board with correct ARIA attributes', () => {
@@ -115,8 +119,8 @@ describe('MineSweeper', () => {
 
     it('initializes cells with proper accessibility attributes', () => {
       mineSweeper.initGame();
-      const firstCell = document.getElementById('game-board')?.children[0];
-      const secondCell = document.getElementById('game-board')?.children[1];
+      const firstCell = getCell(0, 0);
+      const secondCell = getCell(0, 1);
 
       expect(firstCell?.getAttribute('tabIndex')).toBe('0'); // First cell focusable
       expect(secondCell?.getAttribute('tabIndex')).toBe('-1'); // Others not focusable
@@ -164,7 +168,7 @@ describe('MineSweeper', () => {
   describe('Flag Management', () => {
     it('toggles flag with right click and updates counter', () => {
       mineSweeper.initGame();
-      const cell = document.getElementById('game-board')?.children[0];
+      const cell = getCell(0, 0);
 
       const contextEvent = new MouseEvent('contextmenu');
       cell?.dispatchEvent(contextEvent);
@@ -175,7 +179,7 @@ describe('MineSweeper', () => {
 
     it('removes flag when toggled again and restores aria-label', () => {
       mineSweeper.initGame();
-      const cell = document.getElementById('game-board')?.children[0];
+      const cell = getCell(0, 0);
 
       // Add flag
       cell?.dispatchEvent(new MouseEvent('contextmenu'));
@@ -189,7 +193,7 @@ describe('MineSweeper', () => {
 
     it('announces flag placement and removal', () => {
       mineSweeper.initGame();
-      const cell = document.getElementById('game-board')?.children[0];
+      const cell = getCell(0, 0);
 
       // Flag cell
       cell?.dispatchEvent(new MouseEvent('contextmenu'));
@@ -202,7 +206,7 @@ describe('MineSweeper', () => {
 
     it('prevents context menu on right click', () => {
       mineSweeper.initGame();
-      const cell = document.getElementById('game-board')?.children[0];
+      const cell = getCell(0, 0);
       const preventDefault = vi.fn();
 
       const contextEvent = new MouseEvent('contextmenu');
@@ -214,7 +218,7 @@ describe('MineSweeper', () => {
 
     it('ignores clicks on flagged cells', () => {
       mineSweeper.initGame();
-      const cell = getCell();
+      const cell = getCell(0, 0);
       // Flag the cell first
       cell.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true }));
       // Try to reveal it
@@ -236,10 +240,10 @@ describe('MineSweeper', () => {
         [false, false, false],
         [false, false, false],
       ];
-      const flagCell = getCell(0);
+      const flagCell = getCell(0, 0);
       flagCell.dispatchEvent(new MouseEvent('contextmenu'));
 
-      const clickCell = getCell(1);
+      const clickCell = getCell(0, 1);
       clickCell.click();
       expect(flagCell.classList.contains('revealed')).toBe(true);
     });
@@ -248,7 +252,7 @@ describe('MineSweeper', () => {
   describe('Timer', () => {
     it('starts timer on first cell reveal', () => {
       mineSweeper.initGame();
-      const cell = getCell();
+      const cell = getCell(0, 0);
 
       cell?.click();
       vi.advanceTimersByTime(2000);
@@ -258,7 +262,7 @@ describe('MineSweeper', () => {
 
     it('announces time elapsed every 30 seconds', () => {
       mineSweeper.initGame();
-      const cell = getCell();
+      const cell = getCell(0, 0);
 
       cell.click(); // Start game
       vi.advanceTimersByTime(30000);
@@ -268,7 +272,7 @@ describe('MineSweeper', () => {
 
     it('stops timer when game ends', () => {
       mineSweeper.initGame();
-      const cell = getCell();
+      const cell = getCell(0, 0);
 
       cell.click(); // Start game
       vi.advanceTimersByTime(1000);
@@ -282,7 +286,7 @@ describe('MineSweeper', () => {
   describe('Keyboard navigation', () => {
     it('toggles flag with spacebar and prevents default', () => {
       mineSweeper.initGame();
-      const cell = document.getElementById('game-board')?.children[0];
+      const cell = getCell(0, 0);
       const keyEvent = new KeyboardEvent('keydown', { key: ' ' });
       cell?.dispatchEvent(keyEvent);
       expect(cell?.getAttribute('aria-label')).toBe('Marked as flag. Press spacebar to unmark');
@@ -290,9 +294,9 @@ describe('MineSweeper', () => {
 
     it('moves focus with arrow keys', () => {
       mineSweeper.initGame();
-      const firstCell = getCell(0);
-      const rightCell = getCell(1);
-      const downCell = getCell(6); // Next row
+      const firstCell = getCell(0, 0);
+      const rightCell = getCell(0, 1);
+      const downCell = getCell(1, 0); // Next row
 
       vi.spyOn(rightCell, 'focus');
       vi.spyOn(downCell, 'focus');
@@ -304,10 +308,29 @@ describe('MineSweeper', () => {
       expect(downCell.focus).toHaveBeenCalled();
     });
 
+    it('moves focus from cell on flood fill', () => {
+      mineSweeper.initGame();
+      mineSweeper['firstClick'] = false;
+      mineSweeper['size'] = 4;
+      mineSweeper['board'] = [
+        ['1', '1', '1', 'E'],
+        ['1', 'M', '2', '1'],
+        ['1', '2', 'M', '1'],
+        ['E', '1', '1', '1'],
+      ];
+      // Force rerender
+      mineSweeper['renderCells'](4);
+      const clickCell = getCell(3, 0);
+      clickCell.click();
+      expect(clickCell.getAttribute('tabIndex')).toBe('-1');
+      const unrevealedCell = getCell(2, 2);
+      expect(unrevealedCell.getAttribute('tabIndex')).toBe('0');
+    });
+
     it('respects board boundaries in navigation', () => {
       mineSweeper.initGame();
-      const topLeftCell = getCell(0);
-      const bottomRightCell = getCell(35); // 6x6 - 1
+      const topLeftCell = getCell(0, 0);
+      const bottomRightCell = getCell(5, 5); // 6x6 - 1
 
       // Try to move beyond boundaries
       topLeftCell?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
@@ -324,7 +347,7 @@ describe('MineSweeper', () => {
 
     it('reveals cell with Enter key', () => {
       mineSweeper.initGame();
-      const cell = getCell(0);
+      const cell = getCell(0, 0);
       const preventDefault = vi.fn();
 
       const keyEvent = new KeyboardEvent('keydown', { key: 'Enter' });
@@ -337,9 +360,9 @@ describe('MineSweeper', () => {
 
     it('updates tabindex correctly during navigation', () => {
       mineSweeper.initGame();
-      const firstCell = getCell(0);
-      const secondCell = getCell(1);
-      const thirdCell = getCell(2);
+      const firstCell = getCell(0, 0);
+      const secondCell = getCell(0, 1);
+      const thirdCell = getCell(0, 2);
       mineSweeper['board'][0][1] = 'E';
       // Focus on first cell to make navigation possible
       firstCell.focus();
@@ -358,7 +381,7 @@ describe('MineSweeper', () => {
 
     it('ignores keyboard events when game ended', () => {
       mineSweeper.initGame();
-      const cell = getCell(0);
+      const cell = getCell(0, 0);
       mineSweeper['gameEnded'] = true;
       vi.spyOn(cell, 'focus');
       cell?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
@@ -367,7 +390,7 @@ describe('MineSweeper', () => {
 
     it('handles keyboard mine explosion', () => {
       mineSweeper.initGame();
-      const cell = getCell(0);
+      const cell = getCell(0, 0);
       const preventDefault = vi.fn();
 
       mineSweeper['firstClick'] = false;
@@ -384,8 +407,8 @@ describe('MineSweeper', () => {
 
     it('clears all cell focus when mine explodes', () => {
       mineSweeper.initGame();
-      const cell = getCell(0);
-      const otherCell = getCell(1);
+      const cell = getCell(0, 0);
+      const otherCell = getCell(0, 1);
 
       otherCell.setAttribute('tabIndex', '0');
       mineSweeper['firstClick'] = false;
@@ -418,7 +441,9 @@ describe('MineSweeper', () => {
 
       intermediateBtn?.click();
 
-      expect(document.getElementById('game-board')?.childElementCount).toBe(81); // 9x9 intermediate
+      const boardEl = document.getElementById('game-board');
+      expect(boardEl?.childElementCount).toBe(9); // 9x9 intermediate
+      expect(boardEl?.children[0].childElementCount).toBe(9); // 9x9 intermediate
       expect(document.getElementById('flag-count')?.innerText).toBe('9');
       expect(document.getElementById('game-board')?.getAttribute('aria-rowcount')).toBe('9');
       expect(document.getElementById('game-board')?.getAttribute('aria-colcount')).toBe('9');
@@ -464,7 +489,9 @@ describe('MineSweeper', () => {
       window.dispatchEvent(new Event('resize'));
       vi.advanceTimersByTime(300); // Account for debounce
 
-      expect(document.getElementById('game-board')?.childElementCount).toBe(36); // Should be beginner
+      const boardEl = document.getElementById('game-board');
+      expect(boardEl?.childElementCount).toBe(6); // Should be beginner
+      expect(boardEl?.children[0].childElementCount).toBe(6); // Should be beginner
     });
 
     it('ignores same difficulty selection', () => {
@@ -479,7 +506,7 @@ describe('MineSweeper', () => {
   describe('Game States', () => {
     it('announces cell reveal', () => {
       mineSweeper.initGame();
-      const cell = getCell();
+      const cell = getCell(0, 0);
 
       cell.click();
 
@@ -489,7 +516,7 @@ describe('MineSweeper', () => {
     it('prevents all interactions after game ends', () => {
       mineSweeper.initGame();
       mineSweeper['gameEnded'] = true;
-      const cell = getCell();
+      const cell = getCell(0, 0);
 
       cell.click();
       expect(cell.classList.contains('revealed')).toBe(false);
@@ -499,7 +526,7 @@ describe('MineSweeper', () => {
 
     it('clears all cell tabindex when game ends', () => {
       mineSweeper.initGame();
-      const cell = getCell();
+      const cell = getCell(0, 0);
       cell.setAttribute('tabIndex', '0');
 
       mineSweeper['endGame'](true);
@@ -539,7 +566,7 @@ describe('MineSweeper', () => {
     it('resets game state when reset button clicked', () => {
       mineSweeper.initGame();
       const resetBtn = document.getElementById('smiley-btn');
-      const cell = getCell();
+      const cell = getCell(0, 0);
 
       // Make changes
       cell.click();
@@ -572,7 +599,7 @@ describe('MineSweeper', () => {
         [false, false, false],
       ];
       mineSweeper['minesCount'] = 0;
-      const cell = getCell(7);
+      const cell = getCell(2, 1);
       cell.click();
       expect(mineSweeper['gameEnded']).toBe(true);
     });
@@ -593,17 +620,17 @@ describe('MineSweeper', () => {
         [false, false, false],
       ];
       mineSweeper['minesCount'] = 1;
-      const cell = getCell(7);
+      const cell = getCell(2, 1);
       cell.click();
       expect(mineSweeper['gameEnded']).toBe(true);
-      expect(getCell(1).classList.contains('flag')).toBe(true);
+      expect(getCell(0, 1).classList.contains('flag')).toBe(true);
     });
   });
 
   describe('Mine Reveal & Lose Condition', () => {
     it('reveals exploded mine and ends game on mine click', () => {
       mineSweeper.initGame();
-      const cell = getCell(0);
+      const cell = getCell(0, 0);
 
       // Force first click to generate mines, then place mine at clicked position
       mineSweeper['firstClick'] = false;
@@ -618,8 +645,8 @@ describe('MineSweeper', () => {
 
     it('reveals all remaining mines when game is lost', () => {
       mineSweeper.initGame();
-      const firstCell = getCell(0);
-      const secondCell = getCell(1);
+      const firstCell = getCell(0, 0);
+      const secondCell = getCell(0, 1);
 
       // Setup board with mines
       mineSweeper['firstClick'] = false;
@@ -633,8 +660,8 @@ describe('MineSweeper', () => {
 
     it('does not reveal flagged mines when game is lost', () => {
       mineSweeper.initGame();
-      const firstCell = getCell(0);
-      const flaggedCell = getCell(1);
+      const firstCell = getCell(0, 0);
+      const flaggedCell = getCell(0, 1);
 
       // Setup board and flag a mine
       mineSweeper['firstClick'] = false;
@@ -650,7 +677,7 @@ describe('MineSweeper', () => {
 
     it('updates smiley image on mine explosion', () => {
       mineSweeper.initGame();
-      const cell = getCell(0);
+      const cell = getCell(0, 0);
 
       mineSweeper['firstClick'] = false;
       mineSweeper['board'][0][0] = 'M';
@@ -662,7 +689,7 @@ describe('MineSweeper', () => {
 
     it('announces game lost when mine is clicked', () => {
       mineSweeper.initGame();
-      const cell = getCell(0);
+      const cell = getCell(0, 0);
 
       mineSweeper['firstClick'] = false;
       mineSweeper['board'][0][0] = 'M';
@@ -674,7 +701,7 @@ describe('MineSweeper', () => {
 
     it('stops timer when mine is exploded', () => {
       mineSweeper.initGame();
-      const cell = getCell(0);
+      const cell = getCell(0, 0);
 
       // Start game first
       mineSweeper['gameStarted'] = true;
@@ -690,8 +717,8 @@ describe('MineSweeper', () => {
 
     it('prevents further cell interactions after mine explosion', () => {
       mineSweeper.initGame();
-      const firstCell = getCell(0);
-      const otherCell = getCell(2);
+      const firstCell = getCell(0, 0);
+      const otherCell = getCell(0, 2);
 
       mineSweeper['firstClick'] = false;
       mineSweeper['board'][0][0] = 'M';
@@ -704,8 +731,8 @@ describe('MineSweeper', () => {
 
     it('prevents flagging after mine explosion', () => {
       mineSweeper.initGame();
-      const firstCell = getCell(0);
-      const otherCell = getCell(2);
+      const firstCell = getCell(0, 0);
+      const otherCell = getCell(0, 2);
 
       mineSweeper['firstClick'] = false;
       mineSweeper['board'][0][0] = 'M';
@@ -720,7 +747,7 @@ describe('MineSweeper', () => {
   describe('Accessibility', () => {
     it('updates aria-label for revealed cells with mine count', () => {
       mineSweeper.initGame();
-      const cell = getCell(0);
+      const cell = getCell(0, 0);
 
       // Mock a cell with adjacent mines
       mineSweeper['board'][0][0] = '2';
@@ -731,7 +758,7 @@ describe('MineSweeper', () => {
 
     it('updates aria-label for revealed empty cells', () => {
       mineSweeper.initGame();
-      const cell = getCell(0);
+      const cell = getCell(0, 0);
 
       mineSweeper['renderCellUpdate'](0, 0, 'RE');
 
@@ -740,7 +767,7 @@ describe('MineSweeper', () => {
 
     it('sets appropriate aria-label for mine cells', () => {
       mineSweeper.initGame();
-      const cell = document.getElementById('game-board')?.children[0];
+      const cell = getCell(0, 0);
 
       mineSweeper['renderCellUpdate'](0, 0, 'M');
 
@@ -750,7 +777,7 @@ describe('MineSweeper', () => {
 
     it('sets appropriate aria-label for exploded mine', () => {
       mineSweeper.initGame();
-      const cell = document.getElementById('game-board')?.children[0];
+      const cell = getCell(0, 0);
 
       mineSweeper['renderCellUpdate'](0, 0, 'RM');
 
@@ -759,15 +786,15 @@ describe('MineSweeper', () => {
 
     it('maintains proper grid structure with aria attributes', () => {
       mineSweeper.initGame();
-      const cells = Array.from(document.getElementById('game-board')?.children || []);
+      const rows = Array.from(document.getElementById('game-board')?.children || []);
 
-      cells.forEach((cell, index) => {
-        const row = Math.floor(index / 6) + 1;
-        const col = (index % 6) + 1;
-
-        expect(cell.getAttribute('aria-rowindex')).toBe(String(row));
-        expect(cell.getAttribute('aria-colindex')).toBe(String(col));
-        expect(cell.getAttribute('role')).toBe('gridcell');
+      rows.forEach((row, rowIndex) => {
+        expect(row.getAttribute('role')).toBe('row');
+        Array.from(row.children).forEach((cell, colIndex) => {
+          expect(cell.getAttribute('aria-rowindex')).toBe(String(rowIndex + 1));
+          expect(cell.getAttribute('aria-colindex')).toBe(String(colIndex + 1));
+          expect(cell.getAttribute('role')).toBe('gridcell');
+        });
       });
     });
   });
