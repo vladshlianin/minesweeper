@@ -158,25 +158,6 @@ export class MineSweeper {
   }
 
   /**
-   * Converts a 1D cell index to row and column coordinates.
-   * @param index - The index in a flat array.
-   * @returns Row and column of the cell.
-   */
-  private getRowColByIndex(index: number) {
-    return { row: Math.floor(index / this.size), col: index % this.size };
-  }
-
-  /**
-   * Converts row and column to a 1D array index.
-   * @param row - Cell row index.
-   * @param col - Cell column index.
-   * @returns Flat index of the cell.
-   */
-  private getIndexByRowCol(row: number, col: number) {
-    return row * this.size + col;
-  }
-
-  /**
    * Updates difficulty button styles and ARIA attributes.
    */
   private updateDifficultyButtons() {
@@ -190,6 +171,16 @@ export class MineSweeper {
         button.setAttribute('aria-pressed', 'true');
       }
     }
+  }
+
+  /**
+   * Finds cell node in a DOM
+   * @param row - Zero based row
+   * @param col - Zero based column.
+   * @returns Cell node
+   */
+  private getCellByRowCol(row: number, col: number): Element {
+    return this.boardEl.children[row].children[col];
   }
 
   /**
@@ -261,112 +252,68 @@ export class MineSweeper {
   }
 
   /**
-   * Clears all cells and resets ARIA attributes.
-   */
-  private resetCells() {
-    // Clear preexisting attributes / mutations
-    const count = this.boardEl.childElementCount;
-    for (let i = 0; i < count; i++) {
-      const child = this.boardEl.children[i];
-      const { row, col } = this.getRowColByIndex(i);
-
-      child.className = 'cell';
-      // Make only the first cell clickable by default
-      child.setAttribute('tabIndex', i === 0 ? '0' : '-1');
-      child.setAttribute('aria-label', 'Unrevealed cell');
-      child.setAttribute('aria-rowindex', String(row + 1));
-      child.setAttribute('aria-colindex', String(col + 1));
-    }
-    for (const child of this.boardEl.children) {
-      // Remove any child nodes - e.g. images
-      while (child.firstChild) {
-        child.removeChild(child.firstChild);
-      }
-    }
-  }
-
-  /**
-   * Removes excess cells from the board DOM.
-   * @param delta - Number of cells to remove.
-   */
-  private removeCells(delta: number) {
-    for (let i = 0; i < Math.abs(delta); i++) {
-      // Not realistically possible, but better to have this guard
-      if (!this.boardEl.lastChild) break;
-      this.boardEl.removeChild(this.boardEl.lastChild);
-    }
-  }
-
-  /**
-   * Adds new cells to the board DOM.
-   * @param startIndex - Start index for new cells.
-   * @param endIndex - End index for new cells.
-   */
-  private addCells(startIndex: number, endIndex: number) {
-    for (let i = startIndex; i < endIndex; i++) {
-      const { row, col } = this.getRowColByIndex(i);
-
-      const cell = document.createElement('button');
-      cell.className = 'cell';
-      // Make only first cell clickable by default
-      cell.setAttribute('tabIndex', i === 0 ? '0' : '-1');
-      cell.setAttribute('aria-label', 'Unrevealed cell');
-      cell.setAttribute('aria-atomic', 'true');
-      cell.setAttribute('aria-live', 'off');
-      cell.setAttribute('role', 'gridcell');
-      cell.setAttribute('aria-rowindex', String(row + 1));
-      cell.setAttribute('aria-colindex', String(col + 1));
-      // Cells are reused between modes
-      // So instead of directly passing row and column
-      // We bind them by index and compute row/col
-      cell.addEventListener('click', this.revealCell.bind(this, i));
-      cell.addEventListener('keydown', (e) => this.onCellKeyDown(e, i));
-      cell.addEventListener('contextmenu', (e) => {
-        // Prevent context menu from showing
-        e.preventDefault();
-        this.toggleFlag(row, col);
-      });
-      this.boardEl.appendChild(cell);
-    }
-  }
-
-  /**
    * Renders the board grid based on current size.
    * @param size - The dimension of the square board.
    */
   private renderCells(size: number) {
-    this.boardEl.style.gridTemplateColumns = `repeat(${size}, max-content)`;
+    // this.boardEl.style.gridTemplateColumns = `repeat(${size}, max-content)`;
+    // Performance wise it would be better to reuse existing cells
+    // However, it would create a lot of overhead, considering that
+    // Cells are grouped into rows
+    // Especially given that difficulty change does not occur so often
+    while (this.boardEl.firstChild) {
+      this.boardEl.removeChild(this.boardEl.firstChild);
+    }
 
-    const totalCells = size ** 2;
-    const delta = totalCells - this.boardEl.childElementCount;
+    for (let row = 0; row < size; row++) {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'row';
+      rowEl.setAttribute('role', 'row');
+      for (let col = 0; col < size; col++) {
+        const cellEl = document.createElement('button');
+        cellEl.className = 'cell';
+        // Make only first cell clickable by default
+        cellEl.setAttribute('tabIndex', row === 0 && col === 0 ? '0' : '-1');
+        cellEl.setAttribute('aria-label', 'Unrevealed cell');
+        cellEl.setAttribute('aria-atomic', 'true');
+        cellEl.setAttribute('aria-live', 'off');
+        cellEl.setAttribute('role', 'gridcell');
+        cellEl.setAttribute('aria-rowindex', String(row + 1));
+        cellEl.setAttribute('aria-colindex', String(col + 1));
 
-    this.resetCells();
-    if (delta <= 0) {
-      // Already present nodes - just remove access
-      this.removeCells(delta);
-    } else {
-      this.addCells(totalCells - delta, totalCells);
+        // Cell listeners
+        cellEl.addEventListener('click', this.revealCell.bind(this, row, col));
+        cellEl.addEventListener('keydown', (e) => this.onCellKeyDown(e, row, col));
+        cellEl.addEventListener('contextmenu', (e) => {
+          // Prevent context menu from showing
+          e.preventDefault();
+          this.toggleFlag(row, col);
+        });
+        rowEl.appendChild(cellEl);
+      }
+      this.boardEl.appendChild(rowEl);
     }
   }
 
   /**
    * Moves keyboard focus to a specific cell.
-   * @param row - Target row index.
-   * @param col - Target column index.
+   * @param row - Target zero based row
+   * @param col - Target zero based column
    */
   private moveFocus(row: number, col: number) {
     // Is within boundaries
     if (row >= 0 && row < this.size && col >= 0 && col < this.size) {
-      const targetIndex = this.getIndexByRowCol(row, col);
-      const targetCell = this.boardEl.children[targetIndex];
+      const targetCell = this.getCellByRowCol(row, col);
       if (targetCell instanceof HTMLElement) {
         targetCell.focus();
         const targetValue = this.board[row][col];
         if (targetValue === 'E' || targetValue === 'M') {
           // Use query selector since keyboard navigation may be interrupted by mouse
           // This way we guarantee that only one element in the grid has tabIndex of 0
-          const prevEl = this.boardEl.querySelector('[tabindex="0"]');
-          prevEl?.setAttribute('tabIndex', '-1');
+          const prevEls = this.boardEl.querySelectorAll('[tabindex="0"]');
+          for (const prevEl of prevEls) {
+            prevEl?.setAttribute('tabIndex', '-1');
+          }
           targetCell.setAttribute('tabIndex', '0');
         }
       }
@@ -376,11 +323,11 @@ export class MineSweeper {
   /**
    * Handles key navigation and actions on a cell.
    * @param e - Keyboard event.
-   * @param index - Flat index of the cell.
+   * @param row - Target zero based row
+   * @param col - Target zero based column
    */
-  private onCellKeyDown(e: KeyboardEvent, index: number) {
+  private onCellKeyDown(e: KeyboardEvent, row: number, col: number) {
     if (!this.gameEnded) {
-      const { row, col } = this.getRowColByIndex(index);
       switch (e.key) {
         case 'ArrowUp': {
           this.moveFocus(row - 1, col);
@@ -400,7 +347,7 @@ export class MineSweeper {
         }
         case 'Enter': {
           e.preventDefault();
-          this.revealCell(index);
+          this.revealCell(row, col);
           break;
         }
         // SpaceBar
@@ -423,8 +370,7 @@ export class MineSweeper {
       if (!this.gameStarted) {
         this.startGame();
       }
-      const index = this.getIndexByRowCol(row, col);
-      const target = this.boardEl.children[index];
+      const target = this.getCellByRowCol(row, col);
 
       const cell = this.board[row][col];
 
@@ -486,8 +432,7 @@ export class MineSweeper {
    * @param value - Value to render in the cell.
    */
   private renderCellUpdate(row: number, col: number, value: CellValue) {
-    const index = row * this.size + col;
-    const target = this.boardEl.children[index];
+    const target = this.getCellByRowCol(row, col);
     target.classList.add('revealed');
     target.setAttribute('tabIndex', '-1');
     if (value === 'RE') {
@@ -547,9 +492,11 @@ export class MineSweeper {
    * Clears keyboard focus from all cells.
    */
   private clearTabIndexFromCells() {
-    for (const child of this.boardEl.children) {
-      if (child.getAttribute('tabIndex') === '0') {
-        child.setAttribute('tabIndex', '-1');
+    for (const rowEl of this.boardEl.children) {
+      for (const cellEl of rowEl.children) {
+        if (cellEl.getAttribute('tabIndex') === '0') {
+          cellEl.setAttribute('tabIndex', '-1');
+        }
       }
     }
   }
@@ -591,8 +538,8 @@ export class MineSweeper {
     // Find closest unrevealed element
     const closestUnrevealed = findUnrevealed(this.board, [row, col]);
     if (closestUnrevealed) {
-      const unrevealedIndex = this.getIndexByRowCol(closestUnrevealed[0], closestUnrevealed[1]);
-      this.boardEl.children[unrevealedIndex].setAttribute('tabIndex', '0');
+      const node = this.getCellByRowCol(closestUnrevealed[0], closestUnrevealed[1]);
+      node.setAttribute('tabIndex', '0');
     }
 
     // Reveal change
@@ -608,12 +555,12 @@ export class MineSweeper {
 
   /**
    * Handles cell reveal logic, including mine logic and game progression.
-   * @param index - Flat index of the clicked cell.
+   * @param row - Clicked zero based cell column
+   * @param col - Clicked zero based cell column
    */
-  private revealCell(index: number) {
+  private revealCell(row: number, col: number) {
     if (!this.gameEnded) {
       if (!this.gameStarted) this.startGame();
-      const { row, col } = this.getRowColByIndex(index);
 
       if (this.firstClick) {
         this.board = attachMines(this.board, this.minesCount, [row, col]);
