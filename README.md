@@ -9,6 +9,8 @@ A modern take on the classic Minesweeper game - accessible and responsive
 ![Minesweeper game with confetti on win](images/win.png)
 
 ## Features
+- **Lightweight**  
+  Whole game script in 5.0KB (and separate 1.4KB chunk for glorious confetti)
 
 - **Full Keyboard Accessibility**  
   Is playable without a mouse
